@@ -19,6 +19,7 @@
 ## load packages
 
 library(tidyverse)
+library(ggtext)
 library(here)
 library(DescTools)
 library(MASS)
@@ -40,8 +41,6 @@ spam <- read_csv("spam.csv", col_names = TRUE)
 
 # check for missing data
 sapply(spam, anyNA)
-
-# overall 
 
 # mean of each column 
 spam %>% 
@@ -65,11 +64,11 @@ spam %>%
 # all variables
 spam_vars <- grep("yesno", names(spam), invert = TRUE, value = TRUE)
 
-# spam_vars %>%
-#   map(~ ggplot(spam, aes(x = .data[[.x]])) +
-#         geom_histogram(fill = "dodgerblue4", color = "black", alpha = 0.5) +
-#         theme_classic()
-#   )
+spam_vars %>%
+  map(~ ggplot(spam, aes(x = .data[[.x]])) +
+        geom_histogram(fill = "dodgerblue4", color = "black", alpha = 0.5) +
+        theme_classic()
+  )
 
 # all variables, stratified by spam y/n status
 spam_vars %>%
@@ -132,3 +131,34 @@ roc_df <- data.frame(true_positive_pct = roc_info$sensitivities*100,
                      classification_threshold = roc_info$thresholds)
 
 
+## -------------------------------------------------
+
+## additional plots
+
+spam_long <- spam %>%
+  pivot_longer(!yesno, names_to = "variable", values_to = "value")
+
+filter(spam_long, value > 0) %>% 
+  ggplot(aes(x = yesno, y = value)) + 
+  geom_boxplot(fill = "dodgerblue4", alpha = 0.5) + 
+  scale_y_log10() + 
+  scale_x_discrete(labels = c("no", "yes")) +
+  labs(
+    title = "**Spam E-Mail Characteristics**",
+    x = "**Spam Category**", 
+    y = "**Value (log-scale)**") + 
+  facet_wrap(~ variable, scales = "free") + 
+  coord_flip() +
+  theme(
+    plot.title = element_markdown(size = 16),
+    axis.title.x = element_markdown(),
+    axis.title.y = element_markdown(),
+    panel.background = element_rect(fill = "white", color = "black"),
+    strip.background = element_blank(),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    
+  )
+
+# ggsave("spam_characteristics.png")
+  
