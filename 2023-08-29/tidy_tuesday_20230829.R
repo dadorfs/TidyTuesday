@@ -22,6 +22,7 @@
 
 library(tidytuesdayR)
 library(tidyverse)
+library(showtext)
 library(here)
 
 ## -------------------------------------------------
@@ -44,12 +45,12 @@ head(fair_use_cases)
 fair_use_cases$categories <- tolower(fair_use_cases$categories)
 
 # Extract unique categories 
-fair_use_categories<- unlist(
+fair_use_categories <- unlist(
   strsplit(fair_use_cases$categories, "[,;]\\s*")
 )
 
 # Some categories differ by spelling/wording
-sort(table(fair_use_categories_1))
+sort(table(fair_use_categories))
 
 # Clean up categories
 fair_use_cases$categories_fixed <- 
@@ -79,6 +80,11 @@ fair_use_cases_long <- fair_use_cases %>%
 ## -------------------------------------------------
 ## Explore
 
+font_add_google("Russo One", family = "r1")
+showtext_opts(dpi = 200)
+showtext_auto()
+
+
 fair_use_cases_long %>% 
   mutate(categories_fixed = fct_infreq(categories_fixed)) %>% 
   ggplot(aes(x = categories_fixed)) + 
@@ -86,25 +92,29 @@ fair_use_cases_long %>%
   coord_flip() +
   theme_minimal()
 
+sub <- "Though not too surprising, fair use cases involving the internet and/or digitization\nhave seen a sharp increase since the early 2000's."
+
 ggplot(fair_use_cases_long) + 
   geom_freqpoly(aes(x = year, color = categories_fixed)) + 
   facet_wrap(~ categories_fixed) + 
   scale_color_discrete() +
-  labs(title = "Fair Use Cases by Category 1950-2022") +
+  labs(title = "Fair Use Cases by Category 1950-2022",
+       subtitle = sub) +
   scale_x_continuous(breaks = seq(1950, 2022, by = 10)) + 
   theme(
     plot.background = element_rect(fill = "black"),
-    plot.margin = margin(2, 2, 1, 1, unit = "lines"),
-    plot.title = element_text(color = "white", face = "bold", size = 16, vjust = 5),
+    plot.margin = margin(40, 25, 0, 0, unit = "pt"),
+    plot.title = element_text(color = "white", family = "r1", face = "bold", size = 24, vjust = 3, hjust = 0),
+    plot.subtitle = element_text(color = "white", family = "r1", vjust = 6),
     panel.grid = element_blank(),
     panel.background = element_rect(fill = "black"),
     strip.background = element_rect(fill = "black"),
-    strip.text = element_text(color = "white", face = "bold"),
-    axis.text = element_text(color = "white"), 
-    axis.text.x = element_text(angle = 45, vjust = 0.9, hjust = 1),
+    strip.text = element_text(color = "white", family = "rb1", face = "bold"),
+    axis.text = element_text(color = "white", family = "rb1"), 
+    axis.text.x = element_text(angle = 45, vjust = 0.9, hjust = 1, family = "rb1"),
     legend.position = "none"
   )  
   
-# ggsave("tt_20230829_fair_use.png", width = 9, height = 6)
+# ggsave("tt_20230829_fair_use.png", height = 8, width = 11, dpi = 200)
 
 
